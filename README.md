@@ -241,14 +241,58 @@ These are optional enhancements. They are not required, but can earn bonus point
 
 ## Quick Start (YOU MUST FILL THIS IN)
 
-Provide exact commands a judge can run.
+### Prerequisites
+- Python 3.9+
+- [Ollama](https://ollama.com/download) installed with `llama3.2` pulled:
+````bash
+  ollama pull llama3.2
+````
 
-Example (replace with your real commands):
+### Install
+````bash
+git clone <your-repo-url>
+cd agentic-rag-chatbot-shalakap99
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+````
 
-```text
-# install dependencies
-# run the app
-# open UI or run CLI
+### Run the sanity check (judges)
+````bash
+make sanity
+# Downloads sample PDF, ingests it, runs 3 QA pairs, validates schema
+# Expected output: VERIFY_OK
+# Output file: artifacts/sanity_output.json
+````
+
+### Run the Streamlit app
+````bash
+# Terminal 1 — start Ollama (if not already running)
+ollama serve
+
+# Terminal 2 — start the app
+source .venv/bin/activate
+.venv/bin/streamlit run app/ui/streamlit_app.py --server.port 8501
+# Opens http://localhost:8501
+````
+
+### Use the app
+
+1. Upload a PDF via the sidebar (arXiv papers work great)
+2. Click **⚙️ Ingest Document**
+3. Ask questions in the chat box
+4. Answers appear with inline citations `[1]` `[2]` and expandable source cards
+5. Upload multiple PDFs — questions search across all indexed documents
+
+### CLI usage (no UI)
+````bash
+# Ingest a PDF
+python -m app.ingestion.ingest --pdf path/to/paper.pdf
+
+# Query the index
+python -m app.ingestion.ingest --query "what is multi-head attention?"
+
+# List indexed documents
+python -m app.ingestion.ingest --list
 ```
 
 ---
