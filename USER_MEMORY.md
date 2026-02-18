@@ -1,7 +1,12 @@
-# USER MEMORY
+# User Memory
 
-<!--
-Append only high-signal, user-specific facts worth remembering.
-Do NOT dump raw conversation.
-Avoid secrets or sensitive information.
--->
+_Last updated: 2026-02-18 15:01_
+
+## Session Summary
+- Ran sanity check on: **arXiv:1706.03762v7  [cs.CL]  2 Aug 2023**
+- Questions asked: 3
+
+## Questions Asked
+1. What is the main contribution of this paper?
+2. What is multi-head attention and how does it work?
+3. What datasets and benchmarks were used for evaluation?
