@@ -39,6 +39,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from app.ingestion.parser   import parse_pdf
 from app.ingestion.chunker  import chunk_document
 from app.ingestion.embedder import EmbedderClient
+from app.retrieval.hybrid    import hybrid_search
 
 
 # ---------------------------------------------------------------------------
@@ -172,7 +173,7 @@ def run_sanity(pdf_path: str, output_path: str) -> dict:
     print("\n── Step 2: Retrieve ────────────────────────────────────────")
     for question in TEST_QUESTIONS:
         try:
-            retrieved = client.query(question, n_results=3)
+            retrieved = hybrid_search(query=question, client=client, n_results=3)
             entry     = _build_qa_entry(question, retrieved, top_n=3)
             result["qa"].append(entry)
             print(f"  ✓ Q: {question[:60]}")

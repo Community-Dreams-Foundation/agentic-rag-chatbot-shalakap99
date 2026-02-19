@@ -21,6 +21,7 @@ from app.ingestion.embedder        import EmbedderClient
 from app.generation.llm_client     import OllamaClient
 from app.generation.prompt_builder import build_grounded_prompt, extract_cited_sources
 from app.memory.memory_writer      import write_memory
+from app.retrieval.hybrid          import hybrid_search
 
 
 # ── Page config ────────────────────────────────────────────────────────────
@@ -245,8 +246,11 @@ if prompt := st.chat_input("Ask a question about your documents…"):
 
     # ── Retrieve ─────────────────────────────────────────────────────────
     with st.spinner("🔍 Searching documents…"):
-        retrieved = embedder.query(
-            prompt, n_results=n_results, where=active_doc_filter
+        retrieved = hybrid_search(
+            query=prompt,
+            client=embedder,
+            n_results=n_results,
+            where=active_doc_filter,
         )
 
     if show_chunks:
