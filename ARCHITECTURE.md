@@ -85,10 +85,15 @@ PDF Upload
 - Selecting "All documents" removes the filter — searches across all indexed content
 - No hardcoding — new documents appear in the dropdown automatically on ingestion
 
+**Implemented: hybrid retrieval (`app/retrieval/hybrid.py`)**
+- BM25 lexical search via `rank-bm25` run over the dense candidate pool
+- Reciprocal Rank Fusion (RRF) merges both ranked lists: `score = Σ 1/(k + rank)`
+- RRF constant k=60 (standard value) reduces sensitivity to top-rank outliers
+- Result: exact keyword queries (dataset names, model names, numbers) now rank correctly
+
 **Planned (next iteration):**
-- BM25 lexical search via `rank-bm25` alongside dense search
-- Reciprocal Rank Fusion (RRF) to merge both ranked lists
-- Cross-encoder reranker (`ms-marco-MiniLM-L-6-v2`) for final top-5 selection
+- Cross-encoder reranker (`ms-marco-MiniLM-L-6-v2`) for final top-5 re-scoring
+- Expand BM25 corpus beyond dense candidates for broader lexical coverage
 
 ---
 
@@ -180,7 +185,7 @@ refusal path before the LLM is invoked.
 | Section-aware chunking | Better citation granularity than fixed-size; slightly slower to parse |
 | ChromaDB local persistence | Zero infrastructure; not horizontally scalable |
 | Ollama local LLM | No API cost, no data leaves the machine; first inference slow on CPU |
-| Dense-only retrieval | Simple to ship; misses exact keyword matches that BM25 catches |
+| Hybrid BM25+dense RRF | Better keyword + semantic coverage; BM25 scoped to dense candidates only |
 | Independent questions (no history) | Prevents context bleed; loses multi-turn coherence |
 | Retrieval-only sanity fallback | `make sanity` always passes; answer quality lower without LLM |
 
