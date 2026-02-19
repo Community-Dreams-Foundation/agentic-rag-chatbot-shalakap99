@@ -55,23 +55,37 @@ def extract_user_facts(messages: list[str]) -> dict[str, list[str]]:
     seen = set()   # deduplicate
 
     for msg in messages:
-        msg = msg.strip()
+        # Split message into individual sentences for better matching
+        sentences = [s.strip() for s in msg.replace(".", ". ").split(". ") if s.strip()]
+        if not sentences:
+            sentences = [msg.strip()]
 
-        for pattern in _PREFERENCE_PATTERNS:
-            m = pattern.search(msg)
-            if m:
-                fact = msg.strip().rstrip(".")
-                if fact.lower() not in seen:
-                    seen.add(fact.lower())
-                    preferences.append(fact)
+        for sentence in sentences:
+            sentence = sentence.strip().rstrip(".")
+            if not sentence:
+                continue
 
-        for pattern in _IDENTITY_PATTERNS:
-            m = pattern.search(msg)
-            if m:
-                fact = msg.strip().rstrip(".")
-                if fact.lower() not in seen:
-                    seen.add(fact.lower())
-                    identity.append(fact)
+            matched_identity = False
+            for pattern in _IDENTITY_PATTERNS:
+                m = pattern.search(sentence)
+                if m:
+                    fact = sentence.strip()
+                    if fact.lower() not in seen:
+                        seen.add(fact.lower())
+                        identity.append(fact)
+                    matched_identity = True
+                    break
+
+            # Only check preference if not already matched as identity
+            if not matched_identity:
+                for pattern in _PREFERENCE_PATTERNS:
+                    m = pattern.search(sentence)
+                    if m:
+                        fact = sentence.strip()
+                        if fact.lower() not in seen:
+                            seen.add(fact.lower())
+                            preferences.append(fact)
+                        break
 
     return {"preferences": preferences, "identity": identity}
 
@@ -190,11 +204,14 @@ def _extract_existing_section(text: str, header: str) -> list[str]:
 
 
 def _merge_unique(existing: list[str], new: list[str]) -> list[str]:
-    """Merge two lists, deduplicating by lowercase comparison."""
-    seen  = {x.lower() for x in existing}
+    """Merge two lists, deduplicating by lowercase comparison (ignoring trailing periods)."""
+    def _normalize(s: str) -> str:
+        return s.lower().strip().rstrip(".")
+
+    seen   = {_normalize(x) for x in existing}
     result = list(existing)
     for item in new:
-        if item.lower() not in seen:
-            seen.add(item.lower())
+        if _normalize(item) not in seen:
+            seen.add(_normalize(item))
             result.append(item)
     return result
