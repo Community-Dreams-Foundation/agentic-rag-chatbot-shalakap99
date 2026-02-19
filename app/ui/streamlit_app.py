@@ -26,8 +26,8 @@ from app.retrieval.hybrid          import hybrid_search
 
 # ── Page config ────────────────────────────────────────────────────────────
 st.set_page_config(
-    page_title="RAG Chatbot",
-    page_icon="📚",
+    page_title="PaperMind",
+    page_icon="🧠",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -81,8 +81,8 @@ def render_citations(sources: list[dict]):
 # SIDEBAR
 # ══════════════════════════════════════════════════════════════════════════
 with st.sidebar:
-    st.title("📚 RAG Chatbot")
-    st.caption("Upload PDFs · Ask questions · Get cited answers")
+    st.title("🧠 PaperMind")
+    st.caption("Ask your research. Get cited answers.")
     st.divider()
 
     # ── Ollama status ──────────────────────────────────────────────────────
@@ -216,7 +216,7 @@ with st.sidebar:
 # ══════════════════════════════════════════════════════════════════════════
 # MAIN CHAT AREA
 # ══════════════════════════════════════════════════════════════════════════
-st.header("💬 Ask Your Documents")
+st.header("💬 Ask PaperMind")
 
 if not embedder.count():
     st.info("👆 Upload a PDF in the sidebar to get started.")
@@ -229,7 +229,7 @@ for msg in st.session_state.messages:
             render_citations(msg["sources"])
 
 # ── Chat input ─────────────────────────────────────────────────────────────
-if prompt := st.chat_input("Ask a question about your documents…"):
+if prompt := st.chat_input("Ask PaperMind a question about your documents…"):
 
     if not embedder.count():
         st.warning("Please upload and ingest a document first.")
