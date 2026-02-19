@@ -182,6 +182,25 @@ with st.sidebar:
     st.caption(f"Total chunks in index: **{embedder.count()}**")
     st.divider()
 
+    # ── Document scope selector ────────────────────────────────────────────
+    st.subheader("🔎 Search Scope")
+    scope_options = ["All documents"] + [
+        f"{d['doc_title'][:35]} ({d['doc_id']})" for d in embedder.list_documents()
+    ]
+    selected_scope = st.selectbox(
+        "Search within",
+        scope_options,
+        index=0,
+        help="Pin your question to one document, or search all.",
+        label_visibility="collapsed",
+    )
+    active_doc_filter = (
+        None if selected_scope == "All documents"
+        else {"doc_id": selected_scope.split("(")[-1].rstrip(")")}
+    )
+
+    st.divider()
+
     # ── Settings ───────────────────────────────────────────────────────────
     st.subheader("⚙️ Settings")
     n_results   = st.slider("Chunks to retrieve", 3, 10, 5)
@@ -228,7 +247,8 @@ if prompt := st.chat_input("Ask a question about your documents…"):
 
     # ── Retrieve ────────────────────────────────────────────────────────
     with st.spinner("🔍 Searching documents…"):
-        retrieved = embedder.query(prompt, n_results=n_results)
+        retrieved = embedder.query(prompt, n_results=n_results,
+                                   where=active_doc_filter)
 
     if show_chunks:
         with st.expander(

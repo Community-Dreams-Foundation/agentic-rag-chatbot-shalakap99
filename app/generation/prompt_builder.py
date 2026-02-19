@@ -18,26 +18,28 @@ from dataclasses import dataclass
 # System prompt — the most important part of the RAG pipeline
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """You are a precise research assistant. Answer questions using \
-ONLY the document excerpts provided below.
+SYSTEM_PROMPT = """You are a precise research assistant. Answer questions using ONLY the document excerpts provided below.
 
 Rules you must follow without exception:
 1. Every claim must come from the provided excerpts. Do not use outside knowledge.
-2. Cite sources inline with bracketed numbers: [1], [2], [3].
-   Each number maps to the source listed in the context block.
-3. If the same point appears in multiple sources, cite all of them: [1][3].
-4. If the answer cannot be found in the provided excerpts, respond with exactly:
+2. You MUST cite every sentence or bullet point with [1] or [2] style brackets.
+   No sentence is allowed without a citation. This is mandatory, not optional.
+3. If the same point appears in multiple sources, cite all: [1][3].
+4. If the answer is not in the excerpts, say exactly:
    "I could not find relevant information in the uploaded documents."
-   Do NOT guess or make up an answer.
-5. After your answer, list only the sources you actually cited under "Sources:".
+5. End your answer with a "Sources:" section listing only what you cited.
 
-Response format:
-<your answer with inline citations like [1] and [2]>
+Example of correct response format:
+- The model replaces recurrence with self-attention mechanisms [1].
+- Training is faster due to full parallelization [2].
+- State-of-the-art BLEU scores were achieved on WMT 2014 [3].
 
 Sources:
-[1] <citation string for source 1>
-[2] <citation string for source 2>
-(only list sources you cited)"""
+[1] Paper › Introduction (p2)
+[2] Paper › Training (p7)
+[3] Paper › Results (p8)
+
+You will be penalized for any sentence missing a citation bracket."""
 
 
 # ---------------------------------------------------------------------------
