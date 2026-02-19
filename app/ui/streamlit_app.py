@@ -6,6 +6,7 @@ Main    : chat interface with grounded answers and citation cards
 """
 
 from __future__ import annotations
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -67,11 +68,10 @@ def render_citations(sources: list[dict]):
             label = f"[{src['ref']}] {src['citation'][:45]}"
             with st.expander(label, expanded=False):
                 st.caption(f"Relevance: {src['score']:.2f}")
-                preview = src['text'][:350]
-                if len(src['text']) > 350:
+                preview = src["text"][:350]
+                if len(src["text"]) > 350:
                     preview += "…"
                 # Strip section prefix for cleaner display
-                import re
                 preview = re.sub(r"^\[[^\]]+\]\n", "", preview)
                 st.markdown(preview)
 
@@ -87,10 +87,10 @@ with st.sidebar:
     # ── Ollama status ──────────────────────────────────────────────────────
     st.subheader("🤖 Model")
     if llm.is_available():
-        models  = llm.list_models()
+        models = llm.list_models()
         if models:
-            chosen  = st.selectbox("Local model", models, index=0,
-                                   label_visibility="collapsed")
+            chosen    = st.selectbox("Local model", models, index=0,
+                                     label_visibility="collapsed")
             llm.model = chosen
             st.success(f"✓ Ollama running  |  {chosen}")
         else:
@@ -115,7 +115,6 @@ with st.sidebar:
             with st.status(f"Ingesting {uploaded.name}…",
                            expanded=True) as status:
                 try:
-                    # Save upload to a temp file
                     suffix = Path(uploaded.name).suffix
                     with tempfile.NamedTemporaryFile(
                         delete=False, suffix=suffix
@@ -136,7 +135,6 @@ with st.sidebar:
                     added = embedder.add_chunks(chunks, show_progress=False)
                     st.write(f"✓ {added} new chunks indexed")
 
-                    # Update memory
                     write_memory(
                         user_questions=[],
                         indexed_docs=embedder.list_documents(),
@@ -183,9 +181,11 @@ with st.sidebar:
     st.divider()
 
     # ── Document scope selector ────────────────────────────────────────────
+    # Dynamically built from the index — no hardcoding, works for any doc
     st.subheader("🔎 Search Scope")
     scope_options = ["All documents"] + [
-        f"{d['doc_title'][:35]} ({d['doc_id']})" for d in embedder.list_documents()
+        f"{d['doc_title'][:35]} ({d['doc_id']})"
+        for d in embedder.list_documents()
     ]
     selected_scope = st.selectbox(
         "Search within",
@@ -241,14 +241,13 @@ if prompt := st.chat_input("Ask a question about your documents…"):
     # Show user message immediately
     with st.chat_message("user"):
         st.markdown(prompt)
-    st.session_state.messages.append(
-        {"role": "user", "content": prompt}
-    )
+    st.session_state.messages.append({"role": "user", "content": prompt})
 
-    # ── Retrieve ────────────────────────────────────────────────────────
+    # ── Retrieve ─────────────────────────────────────────────────────────
     with st.spinner("🔍 Searching documents…"):
-        retrieved = embedder.query(prompt, n_results=n_results,
-                                   where=active_doc_filter)
+        retrieved = embedder.query(
+            prompt, n_results=n_results, where=active_doc_filter
+        )
 
     if show_chunks:
         with st.expander(
@@ -257,48 +256,56 @@ if prompt := st.chat_input("Ask a question about your documents…"):
         ):
             for c in retrieved:
                 st.markdown(
-                    f"**{c['metadata'].get('citation','')}**  "
+                    f"**{c['metadata'].get('citation', '')}**  "
                     f"score `{c['score']}`"
                 )
                 st.caption(c["text"][:200])
 
-    # ── Build prompt ────────────────────────────────────────────────────
-    history = [
-        {"role": m["role"], "content": m["content"]}
-        for m in st.session_state.messages[:-1]
-    ]
+    # ── Build prompt ──────────────────────────────────────────────────────
+    # Each question is treated independently — no history injection.
+    # This prevents cross-question context bleed, which is the correct
+    # behavior for a document Q&A system where each query is self-contained.
     prompt_result = build_grounded_prompt(
         question=prompt,
         retrieved_chunks=retrieved,
-        conversation_history=history,
+        conversation_history=None,
         min_score_threshold=min_score,
     )
 
-    # ── Generate ────────────────────────────────────────────────────────
+    # ── Generate ──────────────────────────────────────────────────────────
     with st.chat_message("assistant"):
         with st.spinner("🤔 Generating answer…"):
             try:
-                response = llm.chat(
-                    prompt_result.messages,
-                    temperature=0.1,
-                )
-                answer = response.text
+                response = llm.chat(prompt_result.messages, temperature=0.1)
+                answer   = response.text
             except RuntimeError as e:
                 answer = f"⚠️ {e}"
 
-        st.markdown(answer)
-        cited = extract_cited_sources(answer, prompt_result.sources)
+        # Strip the "Sources: [1] ..." block the LLM appends to its answer.
+        # We render citations ourselves via the citation cards below.
+        answer_display = re.sub(
+            r"\n+Sources:.*", "", answer, flags=re.DOTALL
+        ).strip()
+
+        # Suppress citation cards when the LLM issued a refusal
+        _REFUSAL = "i could not find relevant information"
+        is_refusal = _REFUSAL in answer.lower()
+        cited      = [] if is_refusal else extract_cited_sources(
+            answer, prompt_result.sources
+        )
+
+        st.markdown(answer_display)
         if cited:
             render_citations(cited)
 
-    # ── Save to history ─────────────────────────────────────────────────
+    # ── Save to history ───────────────────────────────────────────────────
     st.session_state.messages.append({
         "role":    "assistant",
-        "content": answer,
+        "content": answer_display,   # store clean version
         "sources": cited,
     })
 
-    # ── Update memory ────────────────────────────────────────────────────
+    # ── Update memory ─────────────────────────────────────────────────────
     all_questions = [
         m["content"]
         for m in st.session_state.messages
