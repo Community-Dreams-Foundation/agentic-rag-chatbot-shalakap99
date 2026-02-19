@@ -161,7 +161,7 @@ Add your video link here:
 
 ## Video Walkthrough
 
-https://drive.google.com/file/d/1st-zDuGQP82Q4QC1eXaMraCFxRxGMsom/view?usp=drive_link
+https://drive.google.com/file/d/1PGTtmoNV2uYPpDZcza-DN2iYXKnE9HT6/view?usp=sharing
 
 ## 4) Important
 Submissions missing the Participant Info block may be deprioritized during review.

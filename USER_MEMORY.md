@@ -1,12 +1,16 @@
 # User Memory
 
+_Last updated: 2026-02-19 10:55_
+
 ## Identity
-- Not yet provided.
+- I am a Software Engineer
 
 ## Preferences
-- Not yet provided.
+- I prefer weekly summaries on Friday
 
 ## Topics of Interest
+- instruction (×2)
+- contain (×2)
 
 ## Note
 - Raw conversation transcripts are NOT stored.
