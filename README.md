@@ -239,13 +239,14 @@ These are optional enhancements. They are not required, but can earn bonus point
 
 ---
 
-## Quick Start (YOU MUST FILL THIS IN)
+## Quick Start
 
 ### Prerequisites
 - Python 3.9+
 - [Ollama](https://ollama.com/download) installed with `llama3.2` pulled:
 ````bash
   ollama pull llama3.2
+  ollama serve   # keep running in a separate terminal
 ````
 
 ### Install
@@ -256,20 +257,17 @@ python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 ````
 
-### Run the sanity check (judges)
+### Run the sanity check (judges start here)
 ````bash
 make sanity
-# Downloads sample PDF, ingests it, runs 3 QA pairs, validates schema
-# Expected output: VERIFY_OK
+# Downloads sample PDF automatically
+# Ingests, retrieves, validates schema
+# Expected final output: VERIFY_OK
 # Output file: artifacts/sanity_output.json
 ````
 
 ### Run the Streamlit app
 ````bash
-# Terminal 1 — start Ollama (if not already running)
-ollama serve
-
-# Terminal 2 — start the app
 source .venv/bin/activate
 .venv/bin/streamlit run app/ui/streamlit_app.py --server.port 8501
 # Opens http://localhost:8501
@@ -277,13 +275,15 @@ source .venv/bin/activate
 
 ### Use the app
 
-1. Upload a PDF via the sidebar (arXiv papers work great)
+1. Upload any PDF via the sidebar (arXiv papers recommended)
 2. Click **⚙️ Ingest Document**
-3. Ask questions in the chat box
-4. Answers appear with inline citations `[1]` `[2]` and expandable source cards
-5. Upload multiple PDFs — questions search across all indexed documents
+3. Ask questions in the chat — answers include inline `[1]` `[2]` citations
+4. Expand citation cards to see exact source sections and relevance scores
+5. Use **🔎 Search Scope** to pin questions to a specific document
+6. Tell the bot your role or preferences — they are saved to `USER_MEMORY.md`
+7. Use 🗑 to remove documents from the index
 
-### CLI usage (no UI)
+### CLI usage
 ````bash
 # Ingest a PDF
 python -m app.ingestion.ingest --pdf path/to/paper.pdf
@@ -291,11 +291,10 @@ python -m app.ingestion.ingest --pdf path/to/paper.pdf
 # Query the index
 python -m app.ingestion.ingest --query "what is multi-head attention?"
 
-# List indexed documents
+# List indexed documents  
 python -m app.ingestion.ingest --list
 ```
 
----
 
 ## Suggested Evaluation Prompts
 
