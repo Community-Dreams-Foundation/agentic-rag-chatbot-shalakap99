@@ -36,7 +36,7 @@ def hybrid_search(
         Ranked list of result dicts: {chunk_id, text, metadata, score}
         Score is the RRF fusion score (higher = more relevant).
     """
-    fetch_n = max(n_results * 3, 15)   # fetch more than needed for reranking
+    fetch_n = max(n_results * 4, 20)   # fetch more candidates for better coverage
 
     # ── 1. Dense retrieval ────────────────────────────────────────────────
     dense_results = client.query(query, n_results=fetch_n, where=where)

@@ -204,7 +204,7 @@ with st.sidebar:
 
     # ── Settings ───────────────────────────────────────────────────────────
     st.subheader("⚙️ Settings")
-    n_results   = st.slider("Chunks to retrieve", 3, 10, 5)
+    n_results   = st.slider("Chunks to retrieve", 3, 10, 8)
     min_score   = st.slider("Min relevance score", 0.0, 0.8, 0.3, 0.05)
     show_chunks = st.checkbox("Show raw retrieved chunks", value=False)
 
@@ -269,11 +269,13 @@ if prompt := st.chat_input("Ask PaperMind a question about your documents…"):
     # Each question is treated independently — no history injection.
     # This prevents cross-question context bleed, which is the correct
     # behavior for a document Q&A system where each query is self-contained.
+    # RRF scores (0.01-0.04) are on a different scale than cosine scores (0-1).
+    # Skip threshold filtering for hybrid results — retrieval ranking is enough.
     prompt_result = build_grounded_prompt(
         question=prompt,
         retrieved_chunks=retrieved,
         conversation_history=None,
-        min_score_threshold=min_score,
+        min_score_threshold=0.0,
     )
 
     # ── Generate ──────────────────────────────────────────────────────────

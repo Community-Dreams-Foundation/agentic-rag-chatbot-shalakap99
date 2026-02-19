@@ -173,7 +173,7 @@ def run_sanity(pdf_path: str, output_path: str) -> dict:
     print("\n── Step 2: Retrieve ────────────────────────────────────────")
     for question in TEST_QUESTIONS:
         try:
-            retrieved = hybrid_search(query=question, client=client, n_results=3)
+            retrieved = hybrid_search(query=question, client=client, n_results=8)
             entry     = _build_qa_entry(question, retrieved, top_n=3)
             result["qa"].append(entry)
             print(f"  ✓ Q: {question[:60]}")
